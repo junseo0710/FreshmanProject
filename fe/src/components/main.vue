@@ -35,9 +35,9 @@
       </v-flex>
     </v-layout>
   </v-container>
-    <b-btn block variant="outline-success" @click="add">
-      <icon name="plus"></icon>추가
-    </b-btn>
+  <b-btn v-on:click="add" block variant="outline-success">
+    <icon name="plus"></icon>추가
+  </b-btn>
 </div>
 </template>
 
@@ -59,6 +59,33 @@ export default {
     this.getObjs()
   },
   methods: {
+    swalSuccess(msg) {
+      return this.$swal.fire({
+        icon: 'success',
+        // button: false,
+        title: '성공',
+        text: msg,
+        timer: 2000
+      });
+    },
+    swalWarning(msg) {
+      return this.$swal.fire({
+        icon: 'warning',
+        // button: false,
+        title: '실패',
+        text: msg,
+        timer: 2000
+      });
+    },
+    swalError(msg) {
+      return this.$swal.fire({
+        icon: 'error',
+        // button: false,
+        title: '에러',
+        text: msg,
+        timer: 2000
+      });
+    },
     getObjs() {
       const d = new Date()
       this.today = d.getDay()
@@ -75,18 +102,60 @@ export default {
       this.$axios.get(`api/obj/${v}`)
     },
     add() {
+      this.$swal.fire({
+        title: '가게 추가',
+        html:
+          '*이름<input id="swal-input1" class="swal2-input" required="required">' +
+          '*분류<select id="types" name="types"><option value="schoolrs">학사 식당</option><option value="rs">입주 식당</option><option value="cafe">카페</option><option value="else">기타</option></select><hr />' +
+          '*시작 시간(평일)<input type="time" id="Minput1" class="swal2-input" required="required">*종료 시간(평일)<input type="time" id="Minput2" class="swal2-input" required="required">' +
+          '시작 시간(토요일)<input type="time" id="Sainput1" class="swal2-input">종료 시간(토요일)<input type="time" id="Sainput2" class="swal2-input">' +
+          '시작 시간(일요일)<input type="time" id="Suinput1" class="swal2-input">종료 시간(일요일)<input type="time" id="Suinput2" class="swal2-input">',
+        showCloseButton: true,
+        showCancelButton: true
+        // preConfirm: () => {
+        //   return this.$axios.post(`${this.$cfg.path.api}add`, {
+        //     name: document.getElementById('swal-input1').value,
+        //     type: document.getElementById('types').value,
+        //     ws: document.getElementById('Minput1').value,
+        //     wf: document.getElementById('Minput2').value,
+        //     sas: document.getElementById('Sainput1').value,
+        //     saf: document.getElementById('Sainput2').value,
+        //     sus: document.getElementById('Suinput1').value,
+        //     suf: document.getElementById('Suinput2').value
+        //   })
+        // }
+      })
+      .then(() => {
+        return this.$axios.post(`${this.$cfg.path.api}add`, {
+          name: document.getElementById('swal-input1').value,
+          type: document.getElementById('types').value,
+          ws: document.getElementById('Minput1').value,
+          wf: document.getElementById('Minput2').value,
+          sas: document.getElementById('Sainput1').value,
+          saf: document.getElementById('Sainput2').value,
+          sus: document.getElementById('Suinput1').value,
+          suf: document.getElementById('Suinput2').value
+        })
+      })
+      .then((res) => {
+        if (!res.data.success) throw new Error(res.data.msg);
+        return this.swalSuccess('추가 완료');
+      })
+      .catch((err) => {
+        if (err.message) return this.swalError(err.message);
+        this.swalWarning('입력칸을 모두 채워주세요');
+      });
+    },
+    adds() {
       this.$swal({
-          title: '시간 추가',
-          content: 'input',
-          buttons: {
-            cancel: {
-              text: '취소',
-              visible: true
-            },
-            confirm: {
-              text: '추가'
-            }
-          }
+          title: '<i>Custom HTML</i>',
+          // add a custom html tags by defining a html method.
+          html: 'This is an <em> emaphazied text </em>, ' +
+            '<a href="#">links</a> ' +
+            '<strong>And other tags</strong>',
+          showCloseButton: true,
+          showCancelButton: true,
+          focusConfirm: false
         })
         .then((res) => {
           if (!res) throw new Error('');
