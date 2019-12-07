@@ -11,27 +11,44 @@ exports.add = (req, res) => {
     sus,
     suf
   } = req.body
-    const hm=ws.split(':');
-    const cws = (+hm[0])*100+(+hm[1])
-    const hm2=ws.split(':');
-    const cwf = (+hm2[0])*100+(+hm2[1])
+  var timetoint = function(st) {
+    const cst = st.split(':')
+    const rst = (+cst[0]) * 100 + (+cst[1])
+    return rst;
+  }
+  console.log(req.body)
+  let cws = timetoint(ws)
+  let cwf = timetoint(wf)
+  let csas = sas
+  let csaf = saf
+  let csus = sus
+  let csuf = suf
+  if (sas && saf) {
+    csas = timetoint(sas)
+    csaf = timetoint(saf)
+  }
+  if (sus && suf) {
+    csus = timetoint(sus)
+    csuf = timetoint(suf)
+  }
+
   const tm = new Time({
     name: name,
     class: type,
     wtime: {
-      stime:cws,
-      ftime:cwf
+      stime: cws,
+      ftime: cwf
     },
     satime: {
-      stime:sas,
-      ftime:saf
+      stime: csas,
+      ftime: csaf
     },
     sutime: {
-      stime:sus,
-      ftime:suf
+      stime: csus,
+      ftime: csuf
     }
   })
-  console.log(req.body)
+  console.log(tm)
   tm.save()
     .then(r => res.send({
       success: true,
@@ -42,10 +59,21 @@ exports.add = (req, res) => {
       msg: err.message
     }));
 };
-
 exports.change = (req, res) => {
-  res.send({
-    success: false,
-    msg: 'change 준비중입니다'
-  });
+  let day = req.query
+
+  return Time.find()
+    .then((ds) => {
+      res.send({
+        success: true,
+        data: ds
+      })
+    })
+    .catch((err) => {
+      res.send({
+        success: false,
+        msg: err.message
+      });
+    });
+
 };

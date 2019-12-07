@@ -28,13 +28,53 @@
       </b-nav-item-dropdown>
     </b-navbar-nav>
   </b-navbar>
-  <v-container grid-list-md>
-    <v-layout row wrap>
-      <v-flex xs12 sm6 v-for="obj in objs" :key="obj._id">
-        <maincomp :obj="obj"></maincomp>
-      </v-flex>
-    </v-layout>
-  </v-container>
+  <b-card-group deck>
+    <b-card no-body v-for="v in objs" :key="v._id" style="min-width: 25%; max-width: 25%; margin-bottom: 10px;">
+      <b-card-header>
+        <h4>{{ v.name }}</h4>
+      </b-card-header>
+      <b-card-body>
+        <p class="card-text">{{v.class}}</p>
+      </b-card-body>
+      <b-card-footer>
+        <p>
+          <b-button-group class="float-right">
+            <b-btn variant="outline-warning" @click="mod(v)">
+              <icon name="pencil-alt"></icon>
+            </b-btn>
+            <b-btn variant="outline-danger" @click="del(v)">
+              <icon name="trash"></icon>
+            </b-btn>
+          </b-button-group>
+        </p>
+      </b-card-footer>
+    </b-card>
+  </b-card-group>
+  <!-- <b-row>
+    <b-col>
+      <b-btn variant="info" @click="list">새로고침</b-btn>
+      <b-btn variant="success" @click="add" >회사 추가</b-btn>
+    </b-col>
+  </b-row>
+  <b-modal ref="mdRef" :title="md.set.name">
+    <b-row class="mb-2">
+      <b-col>
+        <b-input-group prepend="회사 이름">
+          <b-form-input type="text" v-model="md.set.name"></b-form-input>
+        </b-input-group>
+      </b-col>
+      <b-col>
+        <b-input-group prepend="설명">
+          <b-form-input type="text" v-model="md.set.rmk"></b-form-input>
+        </b-input-group>
+      </b-col>
+    </b-row>
+    <div slot="modal-footer">
+      <b-btn class="float-right" variant="primary" @click="mod(md.set)">
+        저장
+      </b-btn>
+    </div>
+  </b-modal> -->
   <b-btn v-on:click="add" block variant="outline-success">
     <icon name="plus"></icon>추가
   </b-btn>
@@ -51,6 +91,17 @@ export default {
   },
   data() {
     return {
+      d: {
+        name: '',
+        type: '',
+        _id: '',
+        wstime: 0,
+        wftime: 1159,
+        sastime: 0,
+        saftime: 1159,
+        sustime: 0,
+        suftime: 1159
+      },
       objs: [],
       today: 0
     };
@@ -90,61 +141,76 @@ export default {
       const d = new Date()
       this.today = d.getDay()
       const day = this.today
-      this.$axios.get(`api/objs/${day}`)
+      this.$axios.get(`${this.$cfg.path.api}change`, {
+          params: {
+            day: `day`
+          }
+        })
         .then((r) => {
-          this.objs = r.data.objs
+          console.log(r.data)
+          this.objs = r.data.data
         })
         .catch((e) => {
           console.error(e.message)
         })
     },
-    change(v) {
-      this.$axios.get(`api/obj/${v}`)
+    change(day) {
+      this.$axios.get(`${this.$cfg.path.api}change`, {
+          params: {
+            day: `day`
+          }
+        })
+        .then((r) => {
+          console.log(r.data)
+          this.objs = r.data.data
+        })
+        .catch((e) => {
+          console.error(e.message)
+        })
     },
     add() {
       this.$swal.fire({
-        title: '가게 추가',
-        html:
-          '*이름<input id="swal-input1" class="swal2-input" required="required">' +
-          '*분류<select id="types" name="types"><option value="schoolrs">학사 식당</option><option value="rs">입주 식당</option><option value="cafe">카페</option><option value="else">기타</option></select><hr />' +
-          '*시작 시간(평일)<input type="time" id="Minput1" class="swal2-input" required="required">*종료 시간(평일)<input type="time" id="Minput2" class="swal2-input" required="required">' +
-          '시작 시간(토요일)<input type="time" id="Sainput1" class="swal2-input">종료 시간(토요일)<input type="time" id="Sainput2" class="swal2-input">' +
-          '시작 시간(일요일)<input type="time" id="Suinput1" class="swal2-input">종료 시간(일요일)<input type="time" id="Suinput2" class="swal2-input">',
-        showCloseButton: true,
-        showCancelButton: true
-        // preConfirm: () => {
-        //   return this.$axios.post(`${this.$cfg.path.api}add`, {
-        //     name: document.getElementById('swal-input1').value,
-        //     type: document.getElementById('types').value,
-        //     ws: document.getElementById('Minput1').value,
-        //     wf: document.getElementById('Minput2').value,
-        //     sas: document.getElementById('Sainput1').value,
-        //     saf: document.getElementById('Sainput2').value,
-        //     sus: document.getElementById('Suinput1').value,
-        //     suf: document.getElementById('Suinput2').value
-        //   })
-        // }
-      })
-      .then(() => {
-        return this.$axios.post(`${this.$cfg.path.api}add`, {
-          name: document.getElementById('swal-input1').value,
-          type: document.getElementById('types').value,
-          ws: document.getElementById('Minput1').value,
-          wf: document.getElementById('Minput2').value,
-          sas: document.getElementById('Sainput1').value,
-          saf: document.getElementById('Sainput2').value,
-          sus: document.getElementById('Suinput1').value,
-          suf: document.getElementById('Suinput2').value
+          title: '가게 추가',
+          html: '*이름<input id="swal-input1" class="swal2-input" required="required">' +
+            '*분류<select id="types" name="types"><option value="schoolrs">학사 식당</option><option value="rs">입주 식당</option><option value="cafe">카페</option><option value="else">기타</option></select><hr />' +
+            '*시작 시간(평일)<input type="time" id="Minput1" class="swal2-input" required="required">*종료 시간(평일)<input type="time" id="Minput2" class="swal2-input" required="required">' +
+            '시작 시간(토요일)<input type="time" id="Sainput1" class="swal2-input">종료 시간(토요일)<input type="time" id="Sainput2" class="swal2-input">' +
+            '시작 시간(일요일)<input type="time" id="Suinput1" class="swal2-input">종료 시간(일요일)<input type="time" id="Suinput2" class="swal2-input">',
+          showCloseButton: true,
+          showCancelButton: true
+          // preConfirm: () => {
+          //   return this.$axios.post(`${this.$cfg.path.api}add`, {
+          //     name: document.getElementById('swal-input1').value,
+          //     type: document.getElementById('types').value,
+          //     ws: document.getElementById('Minput1').value,
+          //     wf: document.getElementById('Minput2').value,
+          //     sas: document.getElementById('Sainput1').value,
+          //     saf: document.getElementById('Sainput2').value,
+          //     sus: document.getElementById('Suinput1').value,
+          //     suf: document.getElementById('Suinput2').value
+          //   })
+          // }
         })
-      })
-      .then((res) => {
-        if (!res.data.success) throw new Error(res.data.msg);
-        return this.swalSuccess('추가 완료');
-      })
-      .catch((err) => {
-        if (err.message) return this.swalError(err.message);
-        this.swalWarning('입력칸을 모두 채워주세요');
-      });
+        .then(() => {
+          return this.$axios.post(`${this.$cfg.path.api}add`, {
+            name: document.getElementById('swal-input1').value,
+            type: document.getElementById('types').value,
+            ws: document.getElementById('Minput1').value,
+            wf: document.getElementById('Minput2').value,
+            sas: document.getElementById('Sainput1').value,
+            saf: document.getElementById('Sainput2').value,
+            sus: document.getElementById('Suinput1').value,
+            suf: document.getElementById('Suinput2').value
+          })
+        })
+        .then((res) => {
+          if (!res.data.success) throw new Error(res.data.msg);
+          return this.swalSuccess('추가 완료');
+        })
+        .catch((err) => {
+          if (err.message) return this.swalError(err.message);
+          this.swalWarning('입력칸을 모두 채워주세요');
+        });
     },
     adds() {
       this.$swal({
@@ -178,3 +244,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.card {
+  width: 150px;
+}
+</style>

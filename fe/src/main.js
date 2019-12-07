@@ -11,9 +11,12 @@ import Icon from 'vue-awesome/components/Icon';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import cfg from '../../cfg/cfg';
+import '../node_modules/vue-awesome/icons';
+
 Vue.prototype.$axios = axios
 Vue.prototype.$swal = swal
 Vue.prototype.$cfg = cfg;
+Vue.component('icon', Icon);
 // Vue.use(swal2)
 Vue.use(BootstrapVue)
 Vue.config.productionTip = false
