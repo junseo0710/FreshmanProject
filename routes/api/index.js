@@ -8,7 +8,7 @@ const ctrl = require('./data/ctrls');
 // })
 router.post('/add', ctrl.add);
 router.get('/change', ctrl.change);
-
+router.delete('/del', ctrl.del)
 router.all('*', (req, res) => {
   res.status(404).send({ success: false, msg: `unknown uri ${req.path}` });
 });

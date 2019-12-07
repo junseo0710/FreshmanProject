@@ -2,8 +2,6 @@
 <div>
   <b-navbar toggleable="lg" type="dark" variant="info">
     <b-navbar-brand href="#">NavBar</b-navbar-brand>
-
-
     <b-button variant="info" @click="change(1)">월</b-button>
     <b-btn variant="info" @click="change(2)">화</b-btn>
     <b-btn variant="info" @click="change(3)">수</b-btn>
@@ -38,10 +36,12 @@
       </b-card-body>
       <b-card-footer>
         <p>
-          <b-button-group class="float-right">
-            <b-btn variant="outline-warning" @click="mod(v)">
-              <icon name="pencil-alt"></icon>
+          <b-button-group class="float-left">
+            <b-btn variant="outline-info" @click="go(v)">
+              <icon name="search"></icon>
             </b-btn>
+          </b-button-group>
+          <b-button-group class="float-right">
             <b-btn variant="outline-danger" @click="del(v)">
               <icon name="trash"></icon>
             </b-btn>
@@ -50,31 +50,6 @@
       </b-card-footer>
     </b-card>
   </b-card-group>
-  <!-- <b-row>
-    <b-col>
-      <b-btn variant="info" @click="list">새로고침</b-btn>
-      <b-btn variant="success" @click="add" >회사 추가</b-btn>
-    </b-col>
-  </b-row>
-  <b-modal ref="mdRef" :title="md.set.name">
-    <b-row class="mb-2">
-      <b-col>
-        <b-input-group prepend="회사 이름">
-          <b-form-input type="text" v-model="md.set.name"></b-form-input>
-        </b-input-group>
-      </b-col>
-      <b-col>
-        <b-input-group prepend="설명">
-          <b-form-input type="text" v-model="md.set.rmk"></b-form-input>
-        </b-input-group>
-      </b-col>
-    </b-row>
-    <div slot="modal-footer">
-      <b-btn class="float-right" variant="primary" @click="mod(md.set)">
-        저장
-      </b-btn>
-    </div>
-  </b-modal> -->
   <b-btn v-on:click="add" block variant="outline-success">
     <icon name="plus"></icon>추가
   </b-btn>
@@ -137,13 +112,66 @@ export default {
         timer: 2000
       });
     },
+    go(v) {
+      let msg;
+      var timechange = function(tt) {
+        let ret;
+        if (tt) {
+          const hr = parseInt(tt / 100)
+          const mn = tt % 100
+          ret = hr + ' 시   ' + mn + ' 분'
+        } else {
+          ret = '없음'
+        }
+        return ret
+      }
+      msg = '분류: ' + v.class + '\n평일 시작시간: ' + v.wtime.stime + '\n' + '평일 종료시간: ' + v.wtime.ftime + '토요일 시작시간: ' + v.satime.stime + '\n' + '토요일 종료시간: ' + v.satime.ftime + '\n' + '일요일 시작시간: ' +
+        v.sutime.stime + '\n' + '일요일 종료시간: ' + v.sutime.ftime
+      this.$swal.fire({
+        title: v.name,
+        html: '분류: ' + v.class + '<br>평일 시작시간: ' + timechange(v.wtime.stime) + '<br>평일 종료시간: ' + timechange(v.wtime.ftime) + '<br>토요일 시작시간: ' + timechange(v.satime.stime) + '<br>토요일 종료시간: ' + timechange(v.satime.ftime) + '<br>일요일 시작시간: ' +
+          timechange(v.sutime.stime) + '<br>일요일 종료시간: ' + timechange(v.sutime.ftime),
+        showCloseButton: true
+      })
+    },
+    del(v) {
+      this.$swal.fire({
+          title: '가게 삭제',
+          dangerMode: true,
+          buttons: {
+            cancel: {
+              text: '취소',
+              visible: true
+            },
+            confirm: {
+              text: '삭제'
+            }
+          }
+        })
+        .then((sv) => {
+          if (!sv) throw new Error('');
+          return this.$axios.delete(`${this.$cfg.path.api}del`, {
+            params: {
+              id: v._id
+            }
+          });
+        })
+        .then((res) => {
+          if (!res.data.success) throw new Error(res.data.msg);
+          return this.swalSuccess('가게 삭제 완료');
+        })
+        .catch((err) => {
+          if (err.message) return this.swalError(err.message);
+          this.swalWarning('가게 삭제 취소');
+        });
+    },
     getObjs() {
       const d = new Date()
       this.today = d.getDay()
       const day = this.today
       this.$axios.get(`${this.$cfg.path.api}change`, {
           params: {
-            day: `day`
+            day: day
           }
         })
         .then((r) => {
@@ -157,7 +185,7 @@ export default {
     change(day) {
       this.$axios.get(`${this.$cfg.path.api}change`, {
           params: {
-            day: `day`
+            day: day
           }
         })
         .then((r) => {
@@ -172,24 +200,12 @@ export default {
       this.$swal.fire({
           title: '가게 추가',
           html: '*이름<input id="swal-input1" class="swal2-input" required="required">' +
-            '*분류<select id="types" name="types"><option value="schoolrs">학사 식당</option><option value="rs">입주 식당</option><option value="cafe">카페</option><option value="else">기타</option></select><hr />' +
+            '*분류<select id="types" name="types"><option value="학사 식당">학사 식당</option><option value="입주 식당">입주 식당</option><option value="카페">카페</option><option value="기타 업체">기타</option></select><hr />' +
             '*시작 시간(평일)<input type="time" id="Minput1" class="swal2-input" required="required">*종료 시간(평일)<input type="time" id="Minput2" class="swal2-input" required="required">' +
             '시작 시간(토요일)<input type="time" id="Sainput1" class="swal2-input">종료 시간(토요일)<input type="time" id="Sainput2" class="swal2-input">' +
             '시작 시간(일요일)<input type="time" id="Suinput1" class="swal2-input">종료 시간(일요일)<input type="time" id="Suinput2" class="swal2-input">',
           showCloseButton: true,
           showCancelButton: true
-          // preConfirm: () => {
-          //   return this.$axios.post(`${this.$cfg.path.api}add`, {
-          //     name: document.getElementById('swal-input1').value,
-          //     type: document.getElementById('types').value,
-          //     ws: document.getElementById('Minput1').value,
-          //     wf: document.getElementById('Minput2').value,
-          //     sas: document.getElementById('Sainput1').value,
-          //     saf: document.getElementById('Sainput2').value,
-          //     sus: document.getElementById('Suinput1').value,
-          //     suf: document.getElementById('Suinput2').value
-          //   })
-          // }
         })
         .then(() => {
           return this.$axios.post(`${this.$cfg.path.api}add`, {
@@ -206,35 +222,6 @@ export default {
         .then((res) => {
           if (!res.data.success) throw new Error(res.data.msg);
           return this.swalSuccess('추가 완료');
-        })
-        .catch((err) => {
-          if (err.message) return this.swalError(err.message);
-          this.swalWarning('입력칸을 모두 채워주세요');
-        });
-    },
-    adds() {
-      this.$swal({
-          title: '<i>Custom HTML</i>',
-          // add a custom html tags by defining a html method.
-          html: 'This is an <em> emaphazied text </em>, ' +
-            '<a href="#">links</a> ' +
-            '<strong>And other tags</strong>',
-          showCloseButton: true,
-          showCancelButton: true,
-          focusConfirm: false
-        })
-        .then((res) => {
-          if (!res) throw new Error('');
-          return this.$axios.post(`${this.$cfg.path.api}data/company`, {
-            name: res
-          });
-        })
-        .then((res) => {
-          if (!res.data.success) throw new Error(res.data.msg);
-          return this.swalSuccess('추가 완료');
-        })
-        .then(() => {
-          this.list();
         })
         .catch((err) => {
           if (err.message) return this.swalError(err.message);
