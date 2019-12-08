@@ -1,40 +1,41 @@
 <template>
-<div>
-  <b-navbar toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand href="#">NavBar</b-navbar-brand>
-    <b-button variant="info" @click="change(1)">월</b-button>
-    <b-btn variant="info" @click="change(2)">화</b-btn>
-    <b-btn variant="info" @click="change(3)">수</b-btn>
-    <b-btn variant="info" @click="change(4)">목</b-btn>
-    <b-btn variant="info" @click="change(5)">금</b-btn>
-    <b-btn variant="info" @click="change(6)">토</b-btn>
-    <b-btn variant="info" @click="change(7)">일</b-btn>
+<div class="all">
+  <b-navbar class="nav" toggleable="lg" type="dark" variant="info">
+    <b-navbar-brand size="lg" href="#">TimeTable</b-navbar-brand>
+    <b-button class="fb" variant="light" size="lg" v-bind:class="{'white':!this.button[0].state, 'gray': !this.button[0].state}" @click="now()">현재 영업중</b-button>
+    <b-button class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[1].state, 'gray': !this.button[1].state}" @click="change(1)">월</b-button>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[2].state, 'gray': !this.button[2].state}" @click="change(2)">화</b-btn>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[3].state, 'gray': !this.button[3].state}" @click="change(3)">수</b-btn>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[4].state, 'gray': !this.button[4].state}" @click="change(4)">목</b-btn>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[5].state, 'gray': !this.button[5].state}" @click="change(5)">금</b-btn>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[6].state, 'gray': !this.button[6].state}" @click="change(6)">토</b-btn>
+    <b-btn class="fb" variant="secondary" size="lg" v-bind:class="{'white':!this.button[7].state, 'gray': !this.button[7].state}" @click="change(0)">일</b-btn>
 
     <!-- Right aligned nav items -->
-    <b-navbar-nav class="ml-auto">
+    <!-- <b-navbar-nav class="ml-auto">
       <b-nav-form>
         <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
         <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
       </b-nav-form>
-      <b-nav-item-dropdown right>
+      <b-nav-item-dropdown right> -->
         <!-- Using 'button-content' slot -->
-        <template v-slot:button-content>
+        <!-- <template v-slot:button-content>
           <em>User</em>
         </template>
         <b-dropdown-item href="#">Profile</b-dropdown-item>
         <b-dropdown-item href="#">Sign Out</b-dropdown-item>
       </b-nav-item-dropdown>
-    </b-navbar-nav>
+    </b-navbar-nav> -->
   </b-navbar>
-  <b-card-group deck>
-    <b-card no-body v-for="v in objs" :key="v._id" style="min-width: 25%; max-width: 25%; margin-bottom: 10px;">
-      <b-card-header>
+  <b-card-group deck class="group">
+    <b-card border-variant="light" no-body v-for="v in objs" :key="v._id" style="min-width: 25%; margin-bottom: 10px;">
+      <b-card-header header-bg-variant="primary" header-border-variant="light"  header-text-variant="white">
         <h4>{{ v.name }}</h4>
       </b-card-header>
       <b-card-body>
         <p class="card-text">{{v.class}}</p>
       </b-card-body>
-      <b-card-footer>
+      <b-card-footer footer-bg-variant = "light" footer-border-variant = "primary">
         <p>
           <b-button-group class="float-left">
             <b-btn variant="outline-info" @click="go(v)">
@@ -50,7 +51,7 @@
       </b-card-footer>
     </b-card>
   </b-card-group>
-  <b-btn v-on:click="add" block variant="outline-success">
+  <b-btn v-on:click="add" size="lg" block variant="outline-success">
     <icon name="plus"></icon>추가
   </b-btn>
 </div>
@@ -78,11 +79,22 @@ export default {
         suftime: 1159
       },
       objs: [],
-      today: 0
+      today: 0,
+      button: [
+        { state: false },
+        { state: false },
+        { state: false },
+        { state: false },
+        { state: false },
+        { state: false },
+        { state: false },
+        { state: false }
+      ],
+      buttontoggle: false
     };
   },
   mounted() {
-    this.getObjs()
+    this.now()
   },
   methods: {
     swalSuccess(msg) {
@@ -114,23 +126,36 @@ export default {
     },
     go(v) {
       let msg;
-      var timechange = function(tt) {
+      var timechange = function(st, ft) {
         let ret;
-        if (tt) {
-          const hr = parseInt(tt / 100)
-          const mn = tt % 100
-          ret = hr + ' 시   ' + mn + ' 분'
+        if (st && ft) {
+          const hrs = parseInt(st / 100)
+          const mns = st % 100
+          const hrf = parseInt(ft / 100)
+          const mnf = ft % 100
+          let ret1;
+          let ret2;
+          if (hrs >= 0 && hrs <= 12) {
+            ret1 = '오전 ' + hrs + '시 ' + mns + '분'
+          } else {
+            ret1 = '오후 ' + hrs + '시 ' + mns + '분'
+          }
+          if (hrf >= 0 && hrf <= 11) {
+            ret2 = '오전 ' + hrf + '시 ' + mnf + '분'
+          } else {
+            ret2 = '오후 ' + hrf + '시 ' + mnf + '분'
+          }
+          ret = ret1 + ' ~ ' + ret2
         } else {
-          ret = '없음'
+          ret = '휴무'
         }
         return ret
       }
-      msg = '분류: ' + v.class + '\n평일 시작시간: ' + v.wtime.stime + '\n' + '평일 종료시간: ' + v.wtime.ftime + '토요일 시작시간: ' + v.satime.stime + '\n' + '토요일 종료시간: ' + v.satime.ftime + '\n' + '일요일 시작시간: ' +
-        v.sutime.stime + '\n' + '일요일 종료시간: ' + v.sutime.ftime
+      let titl = v.name + '(' + v.class + ')'
       this.$swal.fire({
-        title: v.name,
-        html: '분류: ' + v.class + '<br>평일 시작시간: ' + timechange(v.wtime.stime) + '<br>평일 종료시간: ' + timechange(v.wtime.ftime) + '<br>토요일 시작시간: ' + timechange(v.satime.stime) + '<br>토요일 종료시간: ' + timechange(v.satime.ftime) + '<br>일요일 시작시간: ' +
-          timechange(v.sutime.stime) + '<br>일요일 종료시간: ' + timechange(v.sutime.ftime),
+        title: titl,
+        html: '<hr />평일 시간: ' + timechange(v.wtime.stime, v.wtime.ftime) + '<br>토요일 시간: ' + timechange(v.satime.stime, v.satime.ftime) + '<br>일요일 시간: ' +
+          timechange(v.sutime.stime, v.sutime.ftime),
         showCloseButton: true
       })
     },
@@ -138,6 +163,9 @@ export default {
       this.$swal.fire({
           title: '가게 삭제',
           dangerMode: true,
+          text: 'Enter your password',
+          input: 'password',
+          inputPlaceholder: 'Enter your password',
           buttons: {
             cancel: {
               text: '취소',
@@ -149,7 +177,8 @@ export default {
           }
         })
         .then((sv) => {
-          if (!sv) throw new Error('');
+          if (!(sv.value === 'ilovesparcs')) throw new Error('');
+          // if (!sv) throw new Error('');
           return this.$axios.delete(`${this.$cfg.path.api}del`, {
             params: {
               id: v._id
@@ -162,7 +191,7 @@ export default {
         })
         .catch((err) => {
           if (err.message) return this.swalError(err.message);
-          this.swalWarning('가게 삭제 취소');
+          this.swalWarning('비밀번호가 틀렸습니다');
         });
     },
     getObjs() {
@@ -183,9 +212,47 @@ export default {
         })
     },
     change(day) {
+      if (day === 0) {
+        for (var i = 0; i < 8; i++) {
+          if (this.button[i].state === true) {
+            this.button[i].state = false
+          }
+        }
+        this.button[7].state = !this.button[7].state
+      } else {
+        for (var k = 0; k < 8; k++) {
+          if (this.button[k].state === true) {
+            this.button[k].state = false
+          }
+        }
+      this.button[day].state = !this.button[day].state
+    }
       this.$axios.get(`${this.$cfg.path.api}change`, {
           params: {
             day: day
+          }
+        })
+        .then((r) => {
+          console.log(r.data)
+          this.objs = r.data.data
+        })
+        .catch((e) => {
+          console.error(e.message)
+        })
+    },
+    now() {
+      const d = new Date()
+      this.today = d.getDay()
+      const day = this.today
+      for (var j = 0; j < 8; j++) {
+        if (this.button[j].state === true) {
+          this.button[j].state = false
+        }
+      }
+      this.button[0].state = !this.button[0].state
+      this.$axios.get(`${this.$cfg.path.api}change`, {
+          params: {
+            day: 10
           }
         })
         .then((r) => {
@@ -224,7 +291,10 @@ export default {
           return this.swalSuccess('추가 완료');
         })
         .catch((err) => {
-          if (err.message) return this.swalError(err.message);
+          if (err.message) {
+            console.log(err.message)
+            return;
+          }
           this.swalWarning('입력칸을 모두 채워주세요');
         });
     }
@@ -233,6 +303,19 @@ export default {
 </script>
 <style scoped>
 .card {
-  width: 150px;
+  width: 100%;
+}
+.nav {
+  float: left;
+  width: 100%;
+}
+.group {
+  width: 100%;
+}
+.fb.gray {
+  background-color: rgb(185, 179, 175);
+  border-color: rgb(185, 179, 175);
+  color: white;
+  opacity: 0.9;
 }
 </style>

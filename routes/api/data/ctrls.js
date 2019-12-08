@@ -60,26 +60,32 @@ exports.add = (req, res) => {
     }));
 };
 exports.change = (req, res) => {
-  let day = (req.query.day)%7
+  let day
+  if (req.query.day === '10') {
+    day = 10
+  } else {
+    day = (req.query.day % 7)
+  }
+
   var d = new Date()
   var today = d.getDay()
   var hour = d.getHours()
   var mint = d.getMinutes()
   let pds;
   let mds;
-  console.log(day, today)
-  time = hour*100 + mint
+  time = hour * 100 + mint
+  console.log(day, today, time)
   //오늘을 눌렀을 때
-  if(today === day){
+  if(day === 10) {
     //그런데 지금이 새벽일 때
     if(0 <= hour && hour <= 4) {
       //날짜 상 토요일이나 금요일 밤 넘어서로 간주
-      if(today === 5) {
+      if(today === 6) {
         return Time.find({"wtime.ftime": {$gte: time, $lte: 600}})
           .then((ds) => {
                 res.send({
                   success: true,
-                  data: ds,
+                  data: ds
                 })
               })
           .catch((err) => {
@@ -89,7 +95,7 @@ exports.change = (req, res) => {
             });
           });
       }
-      else if(today === 6) {
+      else if(today === 0) {
         //날짜 상 일요일이나 토요일 밤 넘어서로 간주
         return Time.find({"satime.ftime": {$gte: time, $lte: 600}})
           .then((ds) => {
@@ -105,7 +111,7 @@ exports.change = (req, res) => {
             });
           });
       }
-      else if(today === 0) {
+      else if(today === 1) {
         //날짜 상 월요일이나 일요일 밤 넘어서로 간주
         return Time.find({"sutime.ftime": {$gt: time, $lte: 600}})
           .then((ds) => {
@@ -154,7 +160,7 @@ exports.change = (req, res) => {
             });
           });
       }
-      else if(today == 6) {
+      else if(today === 6) {
         return Time.find({$and:[{"satime.ftime": {$gte: time}}, {"satime.stime": {$lte: time}}]})
           .then((ds) => {
             res.send({
