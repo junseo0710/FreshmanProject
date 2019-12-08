@@ -16,7 +16,6 @@ exports.add = (req, res) => {
     const rst = (+cst[0]) * 100 + (+cst[1])
     return rst;
   }
-  console.log(req.body)
   let cws = timetoint(ws)
   let cwf = timetoint(wf)
   let csas = sas
@@ -48,7 +47,6 @@ exports.add = (req, res) => {
       ftime: csuf
     }
   })
-  console.log(tm)
   tm.save()
     .then(r => res.send({
       success: true,
@@ -74,7 +72,6 @@ exports.change = (req, res) => {
   let pds;
   let mds;
   time = hour * 100 + mint
-  console.log(day, today, time)
   //오늘을 눌렀을 때
   if(day === 10) {
     //그런데 지금이 새벽일 때

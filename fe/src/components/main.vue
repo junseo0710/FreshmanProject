@@ -204,7 +204,6 @@ export default {
           }
         })
         .then((r) => {
-          console.log(r.data)
           this.objs = r.data.data
         })
         .catch((e) => {
@@ -233,7 +232,6 @@ export default {
           }
         })
         .then((r) => {
-          console.log(r.data)
           this.objs = r.data.data
         })
         .catch((e) => {
@@ -256,7 +254,6 @@ export default {
           }
         })
         .then((r) => {
-          console.log(r.data)
           this.objs = r.data.data
         })
         .catch((e) => {
