@@ -15,8 +15,9 @@ var webpackConfig = merge(baseConfig, {
     alias: {
       // necessary to to make lang="scss" work in test when using vue-loader's ?inject option
       // see discussion at https://github.com/vuejs/vue-loader/issues/724
-      'scss-loader': 'sass-loader'
-    }
+      'scss-loader': 'sass-loader',
+      vue$: 'vue/dist/vue.runtime.esm.js' // 'vue/dist/vue.runtime.common.js' for webpack 1
+          }
   },
   plugins: [
     new webpack.DefinePlugin({

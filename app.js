@@ -15,7 +15,9 @@ if (!cfg) {
   console.error('./cfg/cfg.js file not exists');
   process.exit(1);
 }
-if(cfg.web.cors) app.use(require('cors')());
+
+var cors = require('cors');
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

@@ -8,6 +8,6 @@ module.exports = {
       cors: true,
     },
     path: {
-      api: 'http://localhost:3000/api/'
+      api: 'http://kong.sparcs.org:10005/api/'
     },
 };

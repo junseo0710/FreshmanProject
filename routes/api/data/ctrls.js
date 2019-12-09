@@ -36,7 +36,7 @@ exports.add = (req, res) => {
     class: type,
     wtime: {
       stime: cws,
-      ftime: cwf
+      ftime: cwf,
     },
     satime: {
       stime: csas,
@@ -66,19 +66,23 @@ exports.change = (req, res) => {
   }
 
   var d = new Date()
+  console.log(d)
   var today = d.getDay()
-  var hour = d.getHours()
+  var hour = (d.getHours()+9)%24
   var mint = d.getMinutes()
   let pds;
   let mds;
   time = hour * 100 + mint
-  //오늘을 눌렀을 때
+
+  //현재 영업 중을 눌렀을 때
   if(day === 10) {
-    //그런데 지금이 새벽일 때
-    if(0 <= hour && hour <= 4) {
+    //그런데 지금이 오전일 때
+    if(0 <= hour && hour <= 11) {
       //날짜 상 토요일이나 금요일 밤 넘어서로 간주
       if(today === 6) {
-        return Time.find({"wtime.ftime": {$gte: time, $lte: 600}})
+        return Time.find({$or: [{$and: [{"satime.stime": {$gte: 0, $lt: 1200}}, {"satime.stime": {$lt: time}}, {"satime.ftime": {$gte: 1200, $lt: 2400}}, {"satime.ftime": {$gt: time}}]},
+        {$and: [{"satime.stime": {$gte: 0, $lt: 1200}}, {"satime.stime": {$lt: time}}, {"satime.ftime": {$gte: 0, $lt: 1200}}, {"satime.ftime": {$gt: time}}]},
+      {$and: [{"wtime.ftime": {$gte: 0, $lt: 1200}}, {"wtime.ftime": {$gt: time}}]}]})
           .then((ds) => {
                 res.send({
                   success: true,
@@ -94,7 +98,9 @@ exports.change = (req, res) => {
       }
       else if(today === 0) {
         //날짜 상 일요일이나 토요일 밤 넘어서로 간주
-        return Time.find({"satime.ftime": {$gte: time, $lte: 600}})
+        return Time.find({$or: [{$and: [{"sutime.stime": {$gte: 0, $lt: 1200}}, {"sutime.stime": {$lt: time}}, {"sutime.ftime": {$gte: 1200, $lt: 2400}}, {"sutime.ftime": {$gt: time}}]},
+        {$and: [{"sutime.stime": {$gte: 0, $lt: 1200}}, {"sutime.stime": {$lt: time}}, {"sutime.ftime": {$gte: 0, $lt: 1200}}, {"sutime.ftime": {$gt: time}}]},
+      {$and: [{"satime.ftime": {$gte: 0, $lt: 1200}}, {"satime.ftime": {$gt: time}}]}]})
           .then((ds) => {
             res.send({
               success: true,
@@ -110,7 +116,9 @@ exports.change = (req, res) => {
       }
       else if(today === 1) {
         //날짜 상 월요일이나 일요일 밤 넘어서로 간주
-        return Time.find({"sutime.ftime": {$gt: time, $lte: 600}})
+        return Time.find({$or: [{$and: [{"wtime.stime": {$gte: 0, $lt: 1200}}, {"wtime.stime": {$lt: time}}, {"wtime.ftime": {$gte: 1200, $lt: 2400}}, {"wtime.ftime": {$gt: time}}]},
+        {$and: [{"wtime.stime": {$gte: 0, $lt: 1200}}, {"wtime.stime": {$lt: time}}, {"wtime.ftime": {$gte: 0, $lt: 1200}}, {"wtime.ftime": {$gt: time}}]},
+      {$and: [{"sutime.ftime": {$gte: 0, $lt: 1200}}, {"sutime.ftime": {$gt: time}}]}]})
           .then((ds) => {
             res.send({
               success: true,
@@ -125,7 +133,8 @@ exports.change = (req, res) => {
           });
       }
       else {
-        return Time.find({"wtime.ftime": {$gte: time, $lte: 600}})
+        return Time.find({$or: [{$and: [{"wtime.stime": {$gte: 0, $lt: 1200}}, {"wtime.stime": {$lt: time}}, {"wtime.ftime": {$gt: time}}]},
+        {$and: [{"wtime.stime": {$gte: 1200, $lt: 2400}}, {"wtime.ftime": {$lt: time}}]}]})
           .then((ds) => {
             res.send({
               success: true,
@@ -141,15 +150,18 @@ exports.change = (req, res) => {
       }
     }
     else {
-      //그냥 정상적으로 처리
+      //지금이 오후
+      console.log(time, today)
       if(today === 0) {
-        return Time.find({$and:[{"sutime.ftime": {$gte: time}}, {"sutime.stime": {$lte: time}}]})
-          .then((ds) => {
-            res.send({
-              success: true,
-              data: ds,
-            })
-          })
+        return Time.find({$or: [{$and: [{"sutime.ftime": {$gte: 0, $lt: 1200}}, {"sutime.stime": {$lt: time}}]},
+        {$and: [{"sutime.ftime": {$gte: 1200, $lt: 2400}}, {"sutime.ftime": {$gt: time}}, {"sutime.stime": {$gte: 0, $lt: 1200}}]},
+      {$and: [{"sutime.ftime": {$gte: 1200, $lt: 2400}}, {"sutime.stime": {$lt: time}}, {"sutime.stime": {$gte: 1200, $lt: 2400}}, {"sutime.ftime": {$gt: time}}]}]})
+      .then((ds) => {
+        res.send({
+          success: true,
+          data: ds,
+        })
+      })
           .catch((err) => {
             res.send({
               success: false,
@@ -158,7 +170,9 @@ exports.change = (req, res) => {
           });
       }
       else if(today === 6) {
-        return Time.find({$and:[{"satime.ftime": {$gte: time}}, {"satime.stime": {$lte: time}}]})
+        return Time.find({$or: [{$and: [{"satime.ftime": {$gte: 0, $lt: 1200}}, {"satime.stime": {$lt: time}}]},
+        {$and: [{"satime.ftime": {$gte: 1200, $lt: 2400}}, {"satime.ftime": {$gt: time}}, {"satime.stime": {$gte: 0, $lt: 1200}}]},
+      {$and: [{"satime.ftime": {$gte: 1200, $lt: 2400}}, {"satime.stime": {$lt: time}}, {"satime.stime": {$gte: 1200, $lt: 2400}}, {"satime.ftime": {$gt: time}}]}]})
           .then((ds) => {
             res.send({
               success: true,
@@ -173,8 +187,10 @@ exports.change = (req, res) => {
           });
       }
       else {
-        return Time.find({$and:[{"wtime.ftime": {$gte: time}}, {"wtime.stime": {$lte: time}}]})
-          .then((ds) => {
+        return Time.find({$or: [{$and: [{"wtime.ftime": {$gte: 0, $lt: 1200}}, {"wtime.stime": {$lt: time}}]},
+        {$and: [{"wtime.ftime": {$gte: 1200, $lt: 2400}}, {"wtime.ftime": {$gt: time}}, {"wtime.stime": {$gte: 0, $lt: 1200}}]},
+      {$and: [{"wtime.ftime": {$gte: 1200, $lt: 2400}}, {"wtime.stime": {$lt: time}}, {"wtime.stime": {$gte: 1200, $lt: 2400}}, {"wtime.ftime": {$gt: time}}]}]})
+        .then((ds) => {
             res.send({
               success: true,
               data: ds,
@@ -190,7 +206,7 @@ exports.change = (req, res) => {
     }
   }
   else {
-    //오늘 말고 다른날을 눌렀을 때
+    //현재 영업 중 말고 다른날을 눌렀을 때
     if(day === 0){
       //일요일
       return Time.find({"sutime.stime":{$ne: null}})
