@@ -18,7 +18,7 @@
     "bootstrap": "^4.0.0-beta.2",
     "bootstrap-vue": "latest",
     "jquery": "^3.4.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "popper.js": "^1.12.9",
     "sweetalert": "^2.1.2",
     "sweetalert2": "^9.4.3",
